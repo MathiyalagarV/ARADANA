@@ -1,13 +1,10 @@
 import React, { useState, useRef } from 'react';
 import Logo from '../imgs/logo.jpeg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
-import { faSignOutAlt, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faCheck, faTimes, faImage } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import { faDownload } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 library.add(faWhatsapp);
 
@@ -143,41 +140,38 @@ const StudentPaymentSystem = () => {
         return `${day}.${month}.${year}`;
     };
 
-    const handleDownloadPDF = async () => {
+    const handleSaveImage = async () => {
         if (!invoiceRef.current || isDownloading) return;
     
         try {
             setIsDownloading(true);
     
-
             // Hide download button temporarily
             const downloadButton = invoiceRef.current.querySelector('.invoice-actions');
             if (downloadButton) {
                 downloadButton.style.display = 'none';
             }
 
-    
-            // Capture the PDF - use html2canvas to get the DOM and then create the PDF
+            // Capture the invoice as an image
             const element = invoiceRef.current;
             const canvas = await html2canvas(element, {
-              scale: 4,
-               backgroundColor: '#fff',
+                scale: 4,
+                backgroundColor: '#fff',
             });
             
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const width = pdf.internal.pageSize.getWidth();
-            const height = pdf.internal.pageSize.getHeight();
-            pdf.addImage(imgData, 'PNG', 0, 0, width, height);
-
+            // Create download link
+            const image = canvas.toDataURL('image/png', 1.0);
+            const downloadLink = document.createElement('a');
+            
             // Create filename with student name and date
             const currentDate = formatDate(invoiceData.date);
-            const safeStudentName = invoiceData.studentName.replace(/[^a-zA-Z0-9]/g, '_'); // Replace special characters
-            const fileName = `${safeStudentName}_payment_receipt_${currentDate}.pdf`;
-    
-            pdf.save(fileName);
-    
-
+            const safeStudentName = invoiceData.studentName.replace(/[^a-zA-Z0-9]/g, '_');
+            const fileName = `${safeStudentName}_payment_receipt_${currentDate}.png`;
+            
+            downloadLink.href = image;
+            downloadLink.download = fileName;
+            downloadLink.click();
+            
             // Show download button again
             if (downloadButton) {
                 downloadButton.style.display = 'flex';
@@ -186,7 +180,6 @@ const StudentPaymentSystem = () => {
             setIsDownloading(false);
         }
     };
-
     const handleLogout = () => {
         navigate('/login'); // Navigate to login page
     };
@@ -395,16 +388,16 @@ const StudentPaymentSystem = () => {
 
         {/* Invoice Actions */}
         <div className="invoice-actions" style={styles.invoiceActions}>
-            <button
-                className="action-button"
-                style={styles.actionButton}
-                onClick={handleDownloadPDF}
-                disabled={isDownloading}
-            >
-                <FontAwesomeIcon icon={faDownload} style={{ marginRight: '8px' }} />
-                {isDownloading ? 'Downloading...' : 'Download PDF'}
-            </button>
-        </div>
+        <button
+            className="action-button"
+            style={styles.actionButton}
+            onClick={handleSaveImage}
+            disabled={isDownloading}
+        >
+            <FontAwesomeIcon icon={faImage} style={{ marginRight: '8px' }} />
+            {isDownloading ? 'Saving...' : 'Save as Image'}
+        </button>
+    </div>
     </div>
 )}
                 </div>
