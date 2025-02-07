@@ -1,20 +1,16 @@
 {
   "files": {
-    "main.css": "/ARADANA/static/css/main.e6c13ad2.css",
-    "main.js": "/ARADANA/static/js/main.0c699050.js",
-    "static/js/213.1f840ba8.chunk.js": "/ARADANA/static/js/213.1f840ba8.chunk.js",
-    "static/js/732.be0d18e9.chunk.js": "/ARADANA/static/js/732.be0d18e9.chunk.js",
-    "static/js/453.8ab44547.chunk.js": "/ARADANA/static/js/453.8ab44547.chunk.js",
-    "static/media/logo.jpeg": "/ARADANA/static/media/logo.0e832dfa78ecebd8c7fa.jpeg",
-    "index.html": "/ARADANA/index.html",
-    "main.e6c13ad2.css.map": "/ARADANA/static/css/main.e6c13ad2.css.map",
-    "main.0c699050.js.map": "/ARADANA/static/js/main.0c699050.js.map",
-    "213.1f840ba8.chunk.js.map": "/ARADANA/static/js/213.1f840ba8.chunk.js.map",
-    "732.be0d18e9.chunk.js.map": "/ARADANA/static/js/732.be0d18e9.chunk.js.map",
-    "453.8ab44547.chunk.js.map": "/ARADANA/static/js/453.8ab44547.chunk.js.map"
+    "main.css": "/Ara_test/static/css/main.e6c13ad2.css",
+    "main.js": "/Ara_test/static/js/main.5e1a1146.js",
+    "static/js/453.8ab44547.chunk.js": "/Ara_test/static/js/453.8ab44547.chunk.js",
+    "static/media/logo.jpeg": "/Ara_test/static/media/logo.0e832dfa78ecebd8c7fa.jpeg",
+    "index.html": "/Ara_test/index.html",
+    "main.e6c13ad2.css.map": "/Ara_test/static/css/main.e6c13ad2.css.map",
+    "main.5e1a1146.js.map": "/Ara_test/static/js/main.5e1a1146.js.map",
+    "453.8ab44547.chunk.js.map": "/Ara_test/static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.0c699050.js"
+    "static/js/main.5e1a1146.js"
   ]
 }
