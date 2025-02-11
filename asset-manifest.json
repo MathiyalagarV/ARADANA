@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/ARADANA/static/css/main.e6c13ad2.css",
-    "main.js": "/ARADANA/static/js/main.ab56098c.js",
+    "main.js": "/ARADANA/static/js/main.19c1f7a2.js",
     "static/js/453.8ab44547.chunk.js": "/ARADANA/static/js/453.8ab44547.chunk.js",
     "static/media/logo.jpeg": "/ARADANA/static/media/logo.0e832dfa78ecebd8c7fa.jpeg",
     "index.html": "/ARADANA/index.html",
     "main.e6c13ad2.css.map": "/ARADANA/static/css/main.e6c13ad2.css.map",
-    "main.ab56098c.js.map": "/ARADANA/static/js/main.ab56098c.js.map",
+    "main.19c1f7a2.js.map": "/ARADANA/static/js/main.19c1f7a2.js.map",
     "453.8ab44547.chunk.js.map": "/ARADANA/static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.ab56098c.js"
+    "static/js/main.19c1f7a2.js"
   ]
 }
