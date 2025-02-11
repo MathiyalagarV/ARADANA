@@ -11,17 +11,15 @@ library.add(faWhatsapp);
 const StudentPaymentSystem = () => {
     const [formData, setFormData] = useState({
         studentName: '',
-
+        district: '',
         grade: '',
         months: [],
-
         date: '',
         paymentAmount: ''
     });
 
-
     const [showMonthPicker, setShowMonthPicker] = useState(false);
-
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [invoiceData, setInvoiceData] = useState(null);
     const [showInvoice, setShowInvoice] = useState(false);
     const [formErrors, setFormErrors] = useState({});
@@ -31,9 +29,8 @@ const StudentPaymentSystem = () => {
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
-
-
-    const grades = [1, 2, 3, 4, 5, 6, 7, 8];
+    const districts = ['Colombo', 'Jaffna']; // Available districts
+    const grades = ['Basic Level', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'];
     const invoiceRef = useRef(null);
     const monthPickerRef = useRef(null);
     const navigate = useNavigate();
@@ -52,13 +49,57 @@ const StudentPaymentSystem = () => {
 
     const toggleMonth = (month) => {
         setFormData(prev => {
-            const newMonths = prev.months.includes(month)
-                ? prev.months.filter(m => m !== month)
-                : [...prev.months, month];
-            return { ...prev, months: newMonths };
+            const monthObj = { month, year: selectedYear };
+            const isAlreadySelected = prev.months.some(m => m.month === month && m.year === selectedYear);
+
+            if (isAlreadySelected) {
+                return {
+                    ...prev,
+                    months: prev.months.filter(m => !(m.month === month && m.year === selectedYear))
+                };
+            }
+
+            return {
+                ...prev,
+                months: [...prev.months, monthObj]
+            };
         });
     };
 
+   // Function to remove a specific month
+   const removeSelectedMonth = (monthToRemove, yearToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      months: prev.months.filter(m => !(m.month === monthToRemove && m.year === yearToRemove))
+    }));
+  };
+
+
+
+    // Updated helper function to format months with years
+    const formatMonths = (months) => {
+        if (!months || months.length === 0) return '';
+
+        const sortedMonths = months.sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year;
+            return months.findIndex(m => m.month === a.month) - months.findIndex(m => m.month === b.month);
+        });
+
+        const formattedMonths = sortedMonths.map(m => `${m.month} ${m.year}`);
+
+        if (formattedMonths.length === 1) return formattedMonths[0];
+        if (formattedMonths.length === 2) return `${formattedMonths[0]} & ${formattedMonths[1]}`;
+
+        return formattedMonths.reduce((acc, month, index) => {
+            if (index === formattedMonths.length - 1) {
+                return `${acc} & ${month}`;
+            }
+            if (index === 0) {
+                return month;
+            }
+            return `${acc}, ${month}`;
+        }, '');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -70,11 +111,12 @@ const StudentPaymentSystem = () => {
         if (formData.studentName.match(/\d/)) {
             errors.studentName = 'Student name cannot contain numbers';
         }
-
+        if (!formData.district) {
+            errors.district = 'District is required';
+        }
         if (!formData.grade) {
             errors.grade = 'Grade is required';
         }
-
         if (formData.months.length === 0) {
             errors.months = 'At least one month is required';
         }
@@ -84,6 +126,7 @@ const StudentPaymentSystem = () => {
         if (!formData.paymentAmount) {
             errors.paymentAmount = 'Payment Amount is required';
         }
+
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
             return;
@@ -95,42 +138,14 @@ const StudentPaymentSystem = () => {
 
         setFormData({
             studentName: '',
-
+            district: '',
             grade: '',
-
             months: [],
             date: '',
             paymentAmount: ''
         });
     };
 
-
-
-    // Add this helper function for month formatting
-    const formatMonths = (months) => {
-        if (!months || months.length === 0) return '';
-
-        // Sort months in chronological order
-        const sortedMonths = [...months].sort((a, b) => {
-            return months.indexOf(a) - months.indexOf(b);
-        });
-
-        if (sortedMonths.length === 1) return sortedMonths[0];
-
-        if (sortedMonths.length === 2) return `${sortedMonths[0]} & ${sortedMonths[1]}`;
-
-        return sortedMonths.reduce((acc, month, index) => {
-            if (index === sortedMonths.length - 1) {
-                return `${acc} & ${month}`;
-            }
-            if (index === 0) {
-                return month;
-            }
-            return `${acc}, ${month}`;
-        }, '');
-    };
-
-    // Add this helper function for date formatting
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -142,37 +157,32 @@ const StudentPaymentSystem = () => {
 
     const handleSaveImage = async () => {
         if (!invoiceRef.current || isDownloading) return;
-    
+
         try {
             setIsDownloading(true);
-    
-            // Hide download button temporarily
+
             const downloadButton = invoiceRef.current.querySelector('.invoice-actions');
             if (downloadButton) {
                 downloadButton.style.display = 'none';
             }
 
-            // Capture the invoice as an image
             const element = invoiceRef.current;
             const canvas = await html2canvas(element, {
-                scale: 4,
+                scale: 3,
                 backgroundColor: '#fff',
             });
-            
-            // Create download link
-            const image = canvas.toDataURL('image/png', 1.0);
+
+            const image = canvas.toDataURL('image/jpeg', 1.0);
             const downloadLink = document.createElement('a');
-            
-            // Create filename with student name and date
+
             const currentDate = formatDate(invoiceData.date);
             const safeStudentName = invoiceData.studentName.replace(/[^a-zA-Z0-9]/g, '_');
-            const fileName = `${safeStudentName}_payment_receipt_${currentDate}.png`;
-            
+            const fileName = `${safeStudentName}_payment_receipt_${currentDate}.jpg`;
+
             downloadLink.href = image;
             downloadLink.download = fileName;
             downloadLink.click();
-            
-            // Show download button again
+
             if (downloadButton) {
                 downloadButton.style.display = 'flex';
             }
@@ -180,16 +190,15 @@ const StudentPaymentSystem = () => {
             setIsDownloading(false);
         }
     };
+
     const handleLogout = () => {
-        navigate('/login'); // Navigate to login page
+        navigate('/login');
     };
 
     return (
         <div className="payment-system" style={styles.paymentSystem}>
             <header className="header" style={styles.header}>
-
                 <div className="header-wave" style={styles.headerWave}></div>
-
                 <div className="header-container" style={styles.headerContainer}>
                     <div className="logo-section" style={styles.logoSection}>
                         <img
@@ -198,7 +207,6 @@ const StudentPaymentSystem = () => {
                             className="logo"
                             style={styles.logo}
                         />
-
                         <div style={styles.titleContainer}>
                             <h1 style={styles.schoolTitle}>ARADENA</h1>
                             <h2 style={styles.schoolhSubtitle}>SCHOOL of Music</h2>
@@ -212,7 +220,6 @@ const StudentPaymentSystem = () => {
                     >
                         <FontAwesomeIcon icon={faSignOutAlt} />
                     </div>
-
                 </div>
             </header>
 
@@ -228,13 +235,27 @@ const StudentPaymentSystem = () => {
                                     className="input"
                                     style={styles.input}
                                     value={formData.studentName}
-                                    onChange={(e) => setFormData({
-                                        ...formData,
-                                        studentName: e.target.value
-                                    })}
+                                    onChange={(e) => setFormData({ ...formData, studentName: e.target.value })}
                                     required
                                 />
                                 {formErrors.studentName && <span style={styles.error}>{formErrors.studentName}</span>}
+                            </div>
+
+                            <div className="form-group" style={styles.formGroup}>
+                                <label className="label" style={styles.label}>District</label>
+                                <select
+                                    className="select"
+                                    style={styles.select}
+                                    value={formData.district}
+                                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                                    required
+                                >
+                                    <option value="">Select District</option>
+                                    {districts.map(district => (
+                                        <option key={district} value={district}>{district}</option>
+                                    ))}
+                                </select>
+                                {formErrors.district && <span style={styles.error}>{formErrors.district}</span>}
                             </div>
 
                             <div className="form-group" style={styles.formGroup}>
@@ -248,12 +269,13 @@ const StudentPaymentSystem = () => {
                                 >
                                     <option value="">Select Grade</option>
                                     {grades.map(grade => (
-                                        <option key={grade} value={grade}>Grade {grade}</option>
+                                        <option key={grade} value={grade}>{grade}</option>
                                     ))}
                                 </select>
                                 {formErrors.grade && <span style={styles.error}>{formErrors.grade}</span>}
                             </div>
-                            {/* New Month Picker */}
+
+                            {/* Month Picker with Year Selection */}
                             <div className="form-group" style={styles.formGroup}>
                                 <label className="label" style={styles.label}>Select Months</label>
                                 <div ref={monthPickerRef} style={styles.monthPickerContainer}>
@@ -267,18 +289,45 @@ const StudentPaymentSystem = () => {
                                     </div>
                                     {showMonthPicker && (
                                         <div style={styles.monthPickerDropdown}>
-                                            {months.map((month) => (
-                                                <div
-                                                    key={month}
-                                                    style={styles.monthOption}
-                                                    onClick={() => toggleMonth(month)}
+                                            {/* Year Selection */}
+                                            <div style={styles.yearSelector}>
+                                                <button
+                                                    onClick={() => setSelectedYear(prev => prev - 1)}
+                                                    style={styles.yearButton}
                                                 >
-                                                    <span>{month}</span>
-                                                    {formData.months.includes(month) && (
-                                                        <FontAwesomeIcon icon={faCheck} style={styles.checkIcon} />
-                                                    )}
-                                                </div>
-                                            ))}
+                                                    {'<'}
+                                                </button>
+                                                <span style={styles.yearDisplay}>{selectedYear}</span>
+                                                <button
+                                                    onClick={() => setSelectedYear(prev => prev + 1)}
+                                                    style={styles.yearButton}
+                                                >
+                                                    {'>'}
+                                                </button>
+                                            </div>
+
+                                            {/* Months Grid */}
+                                            <div style={styles.monthGrid}>
+                                                {months.map((month) => (
+                                                    <div
+                                                        key={month}
+                                                        style={{
+                                                            ...styles.monthOption,
+                                                            ...(formData.months.some(m => m.month === month && m.year === selectedYear) ? styles.selectedMonth : {})
+                                                        }}
+                                                        onClick={() => toggleMonth(month)}
+                                                    >
+                                                        <span>{month}</span>
+                                                        {formData.months.some(m => m.month === month && m.year === selectedYear) && (
+                                                            <FontAwesomeIcon
+                                                                icon={faCheck}
+                                                                style={styles.checkIcon}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+
                                         </div>
                                     )}
                                 </div>
@@ -289,20 +338,19 @@ const StudentPaymentSystem = () => {
                             {formData.months.length > 0 && (
                                 <div style={styles.selectedMonthsContainer}>
                                     <div style={styles.selectedMonths}>
-                                        {formData.months.map((month) => (
-                                            <span key={month} style={styles.selectedMonthTag}>
-                                                {month}
+                                        {formData.months.map((monthObj) => (
+                                            <span key={`${monthObj.month}-${monthObj.year}`} style={styles.selectedMonthTag}>
+                                                {monthObj.month} {monthObj.year}
                                                 <FontAwesomeIcon
                                                     icon={faTimes}
                                                     style={styles.removeIcon}
-                                                    onClick={() => toggleMonth(month)}
+                                                    onClick={() => removeSelectedMonth(monthObj.month, monthObj.year)}
                                                 />
                                             </span>
                                         ))}
                                     </div>
                                 </div>
                             )}
-
 
                             <div className="form-group" style={styles.formGroup}>
                                 <label className="label" style={styles.label}>Date</label>
@@ -324,10 +372,7 @@ const StudentPaymentSystem = () => {
                                     className="input"
                                     style={styles.input}
                                     value={formData.paymentAmount}
-                                    onChange={(e) => setFormData({
-                                        ...formData,
-                                        paymentAmount: e.target.value
-                                    })}
+                                    onChange={(e) => setFormData({ ...formData, paymentAmount: e.target.value })}
                                     required
                                 />
                                 {formErrors.paymentAmount && <span style={styles.error}>{formErrors.paymentAmount}</span>}
@@ -340,70 +385,61 @@ const StudentPaymentSystem = () => {
                     </div>
 
                     {showInvoice && invoiceData && (
+                        <div ref={invoiceRef} className="card invoice" style={{ ...styles.card, ...styles.invoice }}>
+                            <div className="invoice-header" style={styles.invoiceHeader}>
+                                <div className="logo-section" style={styles.logoSection}>
+                                    <img src={Logo} alt="Logo" className="logo" style={styles.logo} />
+                                    <div style={styles.titleContainer}>
+                                        <h1 style={styles.schoolTitle}>ARADENA</h1>
+                                        <h2 style={styles.schoolSubtitle}>SCHOOL of Music</h2>
+                                    </div>
+                                </div>
+                            </div>
 
-        <div ref={invoiceRef} className="card invoice" style={{ ...styles.card, ...styles.invoice }}>
-            {/* Invoice Header */}
-            <div className="invoice-header" style={styles.invoiceHeader}>
-                <div className="logo-section" style={styles.logoSection}>
-                    <img
-                        src={Logo}
-                        alt="Logo"
-                        className="logo"
-                        style={styles.logo}
-                    />
-                    <div style={styles.titleContainer}>
-                        <h1 style={styles.schoolTitle}>ARADENA</h1>
-                        <h2 style={styles.schoolSubtitle}>SCHOOL of Music</h2>
-                    </div>
-                </div>
-            </div>
+                            <div className="receipt-date-section" style={styles.receiptDateSection}>
+                                <span style={styles.receiptLabel}>Receipt</span>
+                                <span style={styles.invoiceDate}>Date: {formatDate(invoiceData.date)}</span>
+                            </div>
 
-            {/* Receipt and Date Section - New Position */}
-            <div className="receipt-date-section" style={styles.receiptDateSection}>
-                <span style={styles.receiptLabel}>Receipt</span>
-                <span style={styles.invoiceDate}>Date: {formatDate(invoiceData.date)}</span>
-            </div>
+                            <div className="invoice-details" style={styles.invoiceDetails}>
+                                <div className="student-details-box" style={styles.studentDetailsBox}>
+                                    <h3>Payment Details:</h3>
+                                    <p>Student Name: {invoiceData.studentName}</p>
+                                    <p>Grade: {invoiceData.grade}</p>
+                                    <p>Paid Month: {formatMonths(invoiceData.months)}</p>
+                                    <p>{invoiceData.district}</p>
+                                </div>
 
-       
+                                {/* New Separated Payment Amount Box */}
+                                <div className="payment-amount-box" style={styles.paymentAmountBox}>
+                                    <div style={styles.paymentAmountLabel}>Amount</div>
+                                    <div style={styles.paymentAmountValue}>
+                                        Rs. {invoiceData.paymentAmount} /=
+                                    </div>
+                                </div>
 
-        {/* Invoice Details */}
-        <div className="invoice-details" style={styles.invoiceDetails}>
-            <div className="student-details-box" style={styles.studentDetailsBox}>
-                <h3>Payment Details:</h3>
-                <p>Student Name: {invoiceData.studentName}</p>
-                <p>Grade: {invoiceData.grade}</p>
-                <p>Paid Month: {formatMonths(invoiceData.months)}</p>
-                <p>Amount: Rs. {invoiceData.paymentAmount}</p>
-            </div>
+                                <div style={styles.warningNote}>
+                                    <p>Note: Kindly pay your fee before 10th of every month.</p>
+                                    <p style={styles.thankYouMessage}>Thank You For Your Payment!</p>
+                                </div>
+                            </div>
 
-            <div style={styles.warningNote}>
-                <p>Note: Kindly pay your fee before 10th of every month.</p>
-                <p style={styles.thankYouMessage}>Thank You For Your Payment!</p>
-            </div>
-
-            <div style={styles.thankYouMessage}>
-              
-            </div>
-        </div>
-
-        {/* Invoice Actions */}
-        <div className="invoice-actions" style={styles.invoiceActions}>
-        <button
-            className="action-button"
-            style={styles.actionButton}
-            onClick={handleSaveImage}
-            disabled={isDownloading}
-        >
-            <FontAwesomeIcon icon={faImage} style={{ marginRight: '8px' }} />
-            {isDownloading ? 'Saving...' : 'Save as Image'}
-        </button>
-    </div>
-    </div>
-)}
+                            <div className="invoice-actions" style={styles.invoiceActions}>
+                                <button
+                                    className="action-button"
+                                    style={styles.actionButton}
+                                    onClick={handleSaveImage}
+                                    disabled={isDownloading}
+                                >
+                                    <FontAwesomeIcon icon={faImage} style={{ marginRight: '8px' }} />
+                                    {isDownloading ? 'Saving...' : 'Save as Image'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
         </div>
-            
     );
 };
 
@@ -643,13 +679,47 @@ const styles = {
         zIndex: 1000,
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
     },
-    monthOption: {
-        padding: '8px 12px',
-        cursor: 'pointer',
+    yearSelector: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        ':hover': {
+        padding: '10px',
+        backgroundColor: '#F3F4F6',
+        borderBottom: '1px solid #E5E7EB',
+    },
+    yearButton: {
+        background: 'none',
+        border: '1px solid #4C1D95',
+        color: '#4C1D95',
+        borderRadius: '4px',
+        padding: '5px 10px',
+        cursor: 'pointer',
+    },
+    yearDisplay: {
+        fontSize: '16px',
+        fontWeight: 'bold',
+        color: '#4C1D95',
+    },
+    monthGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '8px',
+        padding: '10px',
+    },
+    selectedMonth: {
+        backgroundColor: '#4C1D95',
+        color: 'white',
+    },
+    monthOption: {
+        padding: '8px',
+        border: '1px solid #E5E7EB',
+        borderRadius: '4px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+        '&:hover': {
             backgroundColor: '#F3F4F6',
         },
     },
@@ -839,9 +909,40 @@ const styles = {
     },
 
   
+    paymentAmountBox: {
+        border: '2px solid #4C1D95',
+        borderRadius: '8px',
+        padding: '16px',
+        backgroundColor: '#F9FAFB',
+        marginTop: '20px',
+        marginBottom: '20px',
+        textAlign: 'center',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        maxWidth: '300px',
+        margin: '20px auto',
+    },
+    paymentAmountLabel: {
+        fontSize: '14px',
+        color: '#4C1D95',
+        fontWeight: 'bold',
+        marginBottom: '8px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+    },
+    paymentAmountValue: {
+        fontSize: '20px',
+        color: '#1F2937',
+        fontWeight: 'bold',
+        padding: '8px',
+        backgroundColor: 'white',
+        borderRadius: '4px',
+        border: '1px solid #E5E7EB',
+    },
+
+    // Updated styles for better layout
     invoiceDetails: {
         marginTop: '16px',
-        borderTop: '1px solidrgb(97, 144, 238)',
+        borderTop: '1px solid rgb(97, 144, 238)',
         paddingTop: '16px',
         display: 'flex',
         flexDirection: 'column',
@@ -851,15 +952,16 @@ const styles = {
             marginTop: '12px',
             gap: '16px'
         },
-   
     },
     
     studentDetailsBox: {
         border: '1px solid #E5E7EB',
-        padding: '12px',
+        padding: '16px',
         borderRadius: '6px',
-       marginTop: '-30px'
+        marginTop: '-30px',
+        backgroundColor: 'white',
     },
+    
     
     warningNote: {
         textAlign: 'center',
