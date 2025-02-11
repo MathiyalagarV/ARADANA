@@ -30,7 +30,7 @@ const StudentPaymentSystem = () => {
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const districts = ['Colombo', 'Jaffna']; // Available districts
-    const grades = ['Basic Level', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'];
+    const grades = ['Basic Level', '01', '02', '03', '04', '05', '06', '07', '08'];
     const invoiceRef = useRef(null);
     const monthPickerRef = useRef(null);
     const navigate = useNavigate();
@@ -406,16 +406,15 @@ const StudentPaymentSystem = () => {
                                     <h3>Payment Details:</h3>
                                     <p>Student Name: {invoiceData.studentName}</p>
                                     <p>Grade: {invoiceData.grade}</p>
-                                    <p>Paid Month: {formatMonths(invoiceData.months)}</p>
+                                    <p>Paid for: {formatMonths(invoiceData.months)}</p>
+                                    <div className="payment-amount-box" style={styles.paymentAmountBox}>
+                                    {/* <div style={styles.paymentAmountValue}>Amount: Rs. {invoiceData.paymentAmount} /= </div> */}
+                                   <h3>Amount: Rs.{invoiceData.paymentAmount} /= </h3>
                                     <p>{invoiceData.district}</p>
                                 </div>
 
                                 {/* New Separated Payment Amount Box */}
-                                <div className="payment-amount-box" style={styles.paymentAmountBox}>
-                                    <div style={styles.paymentAmountLabel}>Amount</div>
-                                    <div style={styles.paymentAmountValue}>
-                                        Rs. {invoiceData.paymentAmount} /=
-                                    </div>
+                               
                                 </div>
 
                                 <div style={styles.warningNote}>
@@ -909,34 +908,34 @@ const styles = {
     },
 
   
-    paymentAmountBox: {
-        border: '2px solid #4C1D95',
-        borderRadius: '8px',
-        padding: '16px',
-        backgroundColor: '#F9FAFB',
-        marginTop: '20px',
-        marginBottom: '20px',
-        textAlign: 'center',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        maxWidth: '300px',
-        margin: '20px auto',
-    },
-    paymentAmountLabel: {
-        fontSize: '14px',
-        color: '#4C1D95',
-        fontWeight: 'bold',
-        marginBottom: '8px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-    },
+    // paymentAmountBox: {
+    //     // border: '2px solid #4C1D95',
+    //     // borderRadius: '8px',
+    //     padding: '5px',
+    //     // backgroundColor: '#F9FAFB',
+    //     // marginTop: '20px',
+    //     marginBottom: '10px',
+    //     // textAlign: 'center',
+    //     // boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    //     maxWidth: '200px',
+    //     // margin: '20px auto',
+    // },
+    // paymentAmountLabel: {
+    //     fontSize: '14px',
+    //     color: '#4C1D95',
+    //     fontWeight: 'bold',
+    //     marginBottom: '8px',
+    //     textTransform: 'uppercase',
+    //     letterSpacing: '0.05em',
+    // },
     paymentAmountValue: {
         fontSize: '20px',
         color: '#1F2937',
         fontWeight: 'bold',
         padding: '8px',
         backgroundColor: 'white',
-        borderRadius: '4px',
-        border: '1px solid #E5E7EB',
+        // borderRadius: '4px',
+        // border: '1px solid #E5E7EB',
     },
 
     // Updated styles for better layout
@@ -960,6 +959,8 @@ const styles = {
         borderRadius: '6px',
         marginTop: '-30px',
         backgroundColor: 'white',
+        marginBottom: '-3%',
+        
     },
     
     
@@ -978,6 +979,7 @@ const styles = {
         marginTop: '20px',
         color: '#460c5f',
         fontSize: '16px',
+        marginBottom: '-3%',
      
     },
     
