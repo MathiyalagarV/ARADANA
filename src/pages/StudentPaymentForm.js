@@ -15,7 +15,11 @@ const StudentPaymentSystem = () => {
         grade: '',
         months: [],
         date: '',
-        paymentAmount: ''
+        subject: 'Keyboard', // Default value set to Keyboard
+        paymentType: '', // new field for radio selection
+        monthlyFee: '', // for regular monthly fee
+        admissionFee: '', // for new student admission fee
+        newStudentMonthlyFee: '', // for new student monthly fee
     });
 
     const [showMonthPicker, setShowMonthPicker] = useState(false);
@@ -25,12 +29,13 @@ const StudentPaymentSystem = () => {
     const [formErrors, setFormErrors] = useState({});
     const [isDownloading, setIsDownloading] = useState(false);
 
+    const subjects = ['Keyboard', 'Violin', 'Vocal', 'Miruthangam'];
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const districts = ['Colombo', 'Jaffna']; // Available districts
-    const grades = ['Basic Level', '01', '02', '03', '04', '05', '06', '07', '08'];
+    const grades = ['New','Basic Level', '01', '02', '03', '04', '05', '06', '07', '08'];
     const invoiceRef = useRef(null);
     const monthPickerRef = useRef(null);
     const navigate = useNavigate();
@@ -101,6 +106,15 @@ const StudentPaymentSystem = () => {
         }, '');
     };
 
+    const calculateTotalAmount = () => {
+        if (formData.paymentType === 'monthly') {
+            return formData.monthlyFee;
+        } else if (formData.paymentType === 'newStudent') {
+            return (parseFloat(formData.admissionFee || 0) + parseFloat(formData.newStudentMonthlyFee || 0)).toString();
+        }
+        return '0';
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -123,8 +137,22 @@ const StudentPaymentSystem = () => {
         if (!formData.date) {
             errors.date = 'Date is required';
         }
-        if (!formData.paymentAmount) {
-            errors.paymentAmount = 'Payment Amount is required';
+        if (!formData.paymentType) {
+            errors.paymentType = 'Payment type is required';
+        }
+        if (formData.paymentType === 'monthly' && !formData.monthlyFee) {
+            errors.monthlyFee = 'Monthly fee is required';
+        }
+        if (!formData.subject) {
+            errors.subject = 'Subject is required';
+        }
+        if (formData.paymentType === 'newStudent') {
+            if (!formData.admissionFee) {
+                errors.admissionFee = 'Admission fee is required';
+            }
+            if (!formData.newStudentMonthlyFee) {
+                errors.newStudentMonthlyFee = 'Monthly fee is required';
+            }
         }
 
         if (Object.keys(errors).length > 0) {
@@ -133,18 +161,28 @@ const StudentPaymentSystem = () => {
         }
         setFormErrors({});
 
-        setInvoiceData({ ...formData });
+        const totalAmount = calculateTotalAmount();
+        setInvoiceData({ 
+            ...formData,
+            paymentAmount: totalAmount 
+        });
         setShowInvoice(true);
 
+        // Reset form
         setFormData({
             studentName: '',
             district: '',
             grade: '',
+            subject: 'Keyboard', // Reset to default
             months: [],
             date: '',
-            paymentAmount: ''
+            paymentType: '',
+            monthlyFee: '',
+            admissionFee: '',
+            newStudentMonthlyFee: '',
         });
     };
+
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -257,7 +295,22 @@ const StudentPaymentSystem = () => {
                                 </select>
                                 {formErrors.district && <span style={styles.error}>{formErrors.district}</span>}
                             </div>
-
+ {/* New Subject field */}
+ <div className="form-group" style={styles.formGroup}>
+                                <label className="label" style={styles.label}>Subject</label>
+                                <select
+                                    className="select"
+                                    style={styles.select}
+                                    value={formData.subject}
+                                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                                    required
+                                >
+                                    {subjects.map(subject => (
+                                        <option key={subject} value={subject}>{subject}</option>
+                                    ))}
+                                </select>
+                                {formErrors.subject && <span style={styles.error}>{formErrors.subject}</span>}
+                            </div>
                             <div className="form-group" style={styles.formGroup}>
                                 <label className="label" style={styles.label}>Grade</label>
                                 <select
@@ -366,18 +419,85 @@ const StudentPaymentSystem = () => {
                             </div>
 
                             <div className="form-group" style={styles.formGroup}>
-                                <label className="label" style={styles.label}>Payment Amount (Rs.)</label>
-                                <input
-                                    type="number"
-                                    className="input"
-                                    style={styles.input}
-                                    value={formData.paymentAmount}
-                                    onChange={(e) => setFormData({ ...formData, paymentAmount: e.target.value })}
-                                    required
-                                />
-                                {formErrors.paymentAmount && <span style={styles.error}>{formErrors.paymentAmount}</span>}
+                                <label className="label" style={styles.label}>Payment Type</label>
+                                <div style={styles.radioGroup}>
+                                    <label style={styles.radioLabel}>
+                                        <input
+                                            type="radio"
+                                            value="monthly"
+                                            checked={formData.paymentType === 'monthly'}
+                                            onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
+                                            style={styles.radioInput}
+                                        />
+                                        Monthly Fee
+                                    </label>
+                                    <label style={styles.radioLabel}>
+                                        <input
+                                            type="radio"
+                                            value="newStudent"
+                                            checked={formData.paymentType === 'newStudent'}
+                                            onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
+                                            style={styles.radioInput}
+                                        />
+                                        New Student
+                                    </label>
+                                </div>
+                                {formErrors.paymentType && <span style={styles.error}>{formErrors.paymentType}</span>}
                             </div>
 
+                            {formData.paymentType === 'monthly' && (
+                                <div className="form-group" style={styles.formGroup}>
+                                    <label className="label" style={styles.label}>Monthly Fee (Rs.)</label>
+                                    <input
+                                        type="number"
+                                        className="input"
+                                        style={styles.input}
+                                        value={formData.monthlyFee}
+                                        onChange={(e) => setFormData({ ...formData, monthlyFee: e.target.value })}
+                                        required
+                                    />
+                                    {formErrors.monthlyFee && <span style={styles.error}>{formErrors.monthlyFee}</span>}
+                                </div>
+                            )}
+
+                            {formData.paymentType === 'newStudent' && (
+                                <>
+                                    <div className="form-group" style={styles.formGroup}>
+                                        <label className="label" style={styles.label}>Admission Fee (Rs.)</label>
+                                        <input
+                                            type="number"
+                                            className="input"
+                                            style={styles.input}
+                                            value={formData.admissionFee}
+                                            onChange={(e) => setFormData({ ...formData, admissionFee: e.target.value })}
+                                            required
+                                        />
+                                        {formErrors.admissionFee && <span style={styles.error}>{formErrors.admissionFee}</span>}
+                                    </div>
+                                    <div className="form-group" style={styles.formGroup}>
+                                        <label className="label" style={styles.label}>Monthly Fee (Rs.)</label>
+                                        <input
+                                            type="number"
+                                            className="input"
+                                            style={styles.input}
+                                            value={formData.newStudentMonthlyFee}
+                                            onChange={(e) => setFormData({ ...formData, newStudentMonthlyFee: e.target.value })}
+                                            required
+                                        />
+                                        {formErrors.newStudentMonthlyFee && <span style={styles.error}>{formErrors.newStudentMonthlyFee}</span>}
+                                    </div>
+                                    <div className="form-group" style={styles.formGroup}>
+                                        <label className="label" style={styles.label}>Total Amount (Rs.)</label>
+                                        <input
+                                            type="text"
+                                            className="input"
+                                            style={styles.input}
+                                            value={calculateTotalAmount()}
+                                            readOnly
+                                        />
+                                    </div>
+                                </>
+                            )}
                             <button type="submit" className="submit-button" style={styles.submitButton}>
                                 Submit Payment
                             </button>
@@ -405,12 +525,22 @@ const StudentPaymentSystem = () => {
                                 <div className="student-details-box" style={styles.studentDetailsBox}>
                                     <h3>Payment Details:</h3>
                                     <p>Student Name: {invoiceData.studentName}</p>
+                                    <p>Subject: {invoiceData.subject}</p>
                                     <p>Grade: {invoiceData.grade}</p>
                                     <p>Paid for: {formatMonths(invoiceData.months)}</p>
                                     <div className="payment-amount-box" style={styles.paymentAmountBox}>
-                                    {/* <div style={styles.paymentAmountValue}>Amount: Rs. {invoiceData.paymentAmount} /= </div> */}
-                                   <h3>Amount: Rs.{invoiceData.paymentAmount} /= </h3>
-                                    <p>{invoiceData.district}</p>
+                                        {invoiceData.paymentType === 'newStudent' ? (
+                                            <>
+                                                <div style={styles.paymentAmountBox}>
+                                                    <p>Admission Fee: Rs.{invoiceData.admissionFee} /=</p>
+                                                    <p>Monthly Fee: Rs.{invoiceData.newStudentMonthlyFee} /=</p>
+                                                    <h3 style={styles.totalAmount}>Total Amount: Rs.{invoiceData.paymentAmount} /=</h3>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <h3>Amount: Rs.{invoiceData.paymentAmount} /=</h3>
+                                        )}
+                                        <p>{invoiceData.district}</p>
                                 </div>
 
                                 {/* New Separated Payment Amount Box */}
@@ -989,7 +1119,31 @@ const styles = {
         color: '#6B7280',
         fontStyle: 'italic'
     },
-
+    radioGroup: {
+        display: 'flex',
+        gap: '20px',
+        marginTop: '8px',
+    },
+    radioLabel: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        cursor: 'pointer',
+    },
+    radioInput: {
+        cursor: 'pointer',
+    },
+    feeBreakdown: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1px',
+        marginBottom: '-3%',
+    },
+    totalAmount: {
+        marginTop: '5px',
+        paddingTop: '5px',
+        borderTop: '1px solid #ddd',
+    }
   };
 
 
