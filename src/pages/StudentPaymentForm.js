@@ -15,13 +15,15 @@ const StudentPaymentSystem = () => {
         grade: '',
         months: [],
         date: '',
-        subject: 'Keyboard', // Default value set to Keyboard
+        subjects: [],  // Default value set to Keyboard
         paymentType: '', // new field for radio selection
         monthlyFee: '', // for regular monthly fee
         admissionFee: '', // for new student admission fee
         newStudentMonthlyFee: '', // for new student monthly fee
     });
-
+ // Add state for subject picker
+ const [showSubjectPicker, setShowSubjectPicker] = useState(false);
+ const subjectPickerRef = useRef(null);
     const [showMonthPicker, setShowMonthPicker] = useState(false);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [invoiceData, setInvoiceData] = useState(null);
@@ -29,7 +31,7 @@ const StudentPaymentSystem = () => {
     const [formErrors, setFormErrors] = useState({});
     const [isDownloading, setIsDownloading] = useState(false);
 
-    const subjects = ['Keyboard', 'Violin', 'Vocal', 'Miruthangam'];
+    const subjects = ['Keyboard', 'Violin', 'Vocal', 'Miruthangam','Flute','Guitar','Piano','Theory of WM'];
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
@@ -39,6 +41,44 @@ const StudentPaymentSystem = () => {
     const invoiceRef = useRef(null);
     const monthPickerRef = useRef(null);
     const navigate = useNavigate();
+
+
+     // Add subject selection toggle function
+  const toggleSubject = (subject) => {
+    setFormData(prev => {
+      const isAlreadySelected = prev.subjects.includes(subject);
+      if (isAlreadySelected) {
+        return {
+          ...prev,
+          subjects: prev.subjects.filter(s => s !== subject)
+        };
+      }
+      return {
+        ...prev,
+        subjects: [...prev.subjects, subject]
+      };
+    });
+  };
+
+  // Function to remove a selected subject
+  const removeSelectedSubject = (subjectToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      subjects: prev.subjects.filter(subject => subject !== subjectToRemove)
+    }));
+  };
+
+  // Add click outside handler for subject picker
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (subjectPickerRef.current && !subjectPickerRef.current.contains(event.target)) {
+        setShowSubjectPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
     // Close month picker when clicking outside
     React.useEffect(() => {
@@ -117,72 +157,71 @@ const StudentPaymentSystem = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         const errors = {};
         if (!formData.studentName.trim()) {
-            errors.studentName = 'Student Name is required';
+          errors.studentName = 'Student Name is required';
         }
         if (formData.studentName.match(/\d/)) {
-            errors.studentName = 'Student name cannot contain numbers';
+          errors.studentName = 'Student name cannot contain numbers';
         }
         if (!formData.district) {
-            errors.district = 'District is required';
+          errors.district = 'District is required';
         }
         if (!formData.grade) {
-            errors.grade = 'Grade is required';
+          errors.grade = 'Grade is required';
         }
         if (formData.months.length === 0) {
-            errors.months = 'At least one month is required';
+          errors.months = 'At least one month is required';
+        }
+        if (formData.subjects.length === 0) {  // Updated validation for subjects
+          errors.subjects = 'At least one subject is required';
         }
         if (!formData.date) {
-            errors.date = 'Date is required';
+          errors.date = 'Date is required';
         }
         if (!formData.paymentType) {
-            errors.paymentType = 'Payment type is required';
+          errors.paymentType = 'Payment type is required';
         }
         if (formData.paymentType === 'monthly' && !formData.monthlyFee) {
-            errors.monthlyFee = 'Monthly fee is required';
-        }
-        if (!formData.subject) {
-            errors.subject = 'Subject is required';
+          errors.monthlyFee = 'Monthly fee is required';
         }
         if (formData.paymentType === 'newStudent') {
-            if (!formData.admissionFee) {
-                errors.admissionFee = 'Admission fee is required';
-            }
-            if (!formData.newStudentMonthlyFee) {
-                errors.newStudentMonthlyFee = 'Monthly fee is required';
-            }
+          if (!formData.admissionFee) {
+            errors.admissionFee = 'Admission fee is required';
+          }
+          if (!formData.newStudentMonthlyFee) {
+            errors.newStudentMonthlyFee = 'Monthly fee is required';
+          }
         }
-
+    
         if (Object.keys(errors).length > 0) {
-            setFormErrors(errors);
-            return;
+          setFormErrors(errors);
+          return;
         }
         setFormErrors({});
-
+    
         const totalAmount = calculateTotalAmount();
-        setInvoiceData({ 
-            ...formData,
-            paymentAmount: totalAmount 
+        setInvoiceData({
+          ...formData,
+          paymentAmount: totalAmount
         });
         setShowInvoice(true);
-
+    
         // Reset form
         setFormData({
-            studentName: '',
-            district: '',
-            grade: '',
-            subject: 'Keyboard', // Reset to default
-            months: [],
-            date: '',
-            paymentType: '',
-            monthlyFee: '',
-            admissionFee: '',
-            newStudentMonthlyFee: '',
+          studentName: '',
+          district: '',
+          grade: '',
+          subjects: [], // Updated to reset subjects array
+          months: [],
+          date: '',
+          paymentType: '',
+          monthlyFee: '',
+          admissionFee: '',
+          newStudentMonthlyFee: '',
         });
-    };
-
+      };
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -297,20 +336,62 @@ const StudentPaymentSystem = () => {
                             </div>
  {/* New Subject field */}
  <div className="form-group" style={styles.formGroup}>
-                                <label className="label" style={styles.label}>Subject</label>
-                                <select
-                                    className="select"
-                                    style={styles.select}
-                                    value={formData.subject}
-                                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                    required
-                                >
-                                    {subjects.map(subject => (
-                                        <option key={subject} value={subject}>{subject}</option>
-                                    ))}
-                                </select>
-                                {formErrors.subject && <span style={styles.error}>{formErrors.subject}</span>}
-                            </div>
+      <label className="label" style={styles.label}>Select Subjects</label>
+      <div ref={subjectPickerRef} style={styles.subjectPickerContainer}>
+        <div
+          style={styles.subjectPickerTrigger}
+          onClick={() => setShowSubjectPicker(!showSubjectPicker)}
+        >
+          {formData.subjects.length > 0
+            ? `${formData.subjects.length} subject${formData.subjects.length > 1 ? 's' : ''} selected`
+            : 'Select subjects'}
+        </div>
+        {showSubjectPicker && (
+          <div style={styles.subjectPickerDropdown}>
+            <div style={styles.subjectGrid}>
+              {subjects.map((subject) => (
+                <div
+                  key={subject}
+                  style={{
+                    ...styles.subjectOption,
+                    ...(formData.subjects.includes(subject) ? styles.selectedSubject : {})
+                  }}
+                  onClick={() => toggleSubject(subject)}
+                >
+                  <span>{subject}</span>
+                  {formData.subjects.includes(subject) && (
+                    <FontAwesomeIcon
+                      icon={faCheck}
+                      style={styles.checkIcon}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {formErrors.subjects && <span style={styles.error}>{formErrors.subjects}</span>}
+
+      {/* Display selected subjects */}
+      {formData.subjects.length > 0 && (
+        <div style={styles.selectedSubjectsContainer}>
+          <div style={styles.selectedSubjects}>
+            {formData.subjects.map((subject) => (
+              <span key={subject} style={styles.selectedSubjectTag}>
+                {subject}
+                <FontAwesomeIcon
+                  icon={faTimes}
+                  style={styles.removeIcon}
+                  onClick={() => removeSelectedSubject(subject)}
+                />
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  
                             <div className="form-group" style={styles.formGroup}>
                                 <label className="label" style={styles.label}>Grade</label>
                                 <select
@@ -522,25 +603,25 @@ const StudentPaymentSystem = () => {
                             </div>
 
                             <div className="invoice-details" style={styles.invoiceDetails}>
-                                <div className="student-details-box" style={styles.studentDetailsBox}>
-                                    <h3>Payment Details:</h3>
-                                    <p>Student Name: {invoiceData.studentName}</p>
-                                    <p>Subject: {invoiceData.subject}</p>
-                                    <p>Grade: {invoiceData.grade}</p>
-                                    <p>Paid for: {formatMonths(invoiceData.months)}</p>
-                                    <div className="payment-amount-box" style={styles.paymentAmountBox}>
-                                        {invoiceData.paymentType === 'newStudent' ? (
-                                            <>
-                                                <div style={styles.paymentAmountBox}>
-                                                    <p>Admission Fee: Rs.{invoiceData.admissionFee} /=</p>
-                                                    <p>Monthly Fee: Rs.{invoiceData.newStudentMonthlyFee} /=</p>
-                                                    <h3 style={styles.totalAmount}>Total Amount: Rs.{invoiceData.paymentAmount} /=</h3>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <h3>Amount: Rs.{invoiceData.paymentAmount} /=</h3>
-                                        )}
-                                        <p>{invoiceData.district}</p>
+            <div className="student-details-box" style={styles.studentDetailsBox}>
+              <h3>Payment Details:</h3>
+              <p>Student Name: {invoiceData.studentName}</p>
+              <p>Subjects: {invoiceData.subjects.join(', ')}</p> {/* Updated to show all subjects */}
+              <p>Grade: {invoiceData.grade}</p>
+              <p>Paid for: {formatMonths(invoiceData.months)}</p>
+              <div className="payment-amount-box" style={styles.paymentAmountBox}>
+                {invoiceData.paymentType === 'newStudent' ? (
+                  <>
+                    <div style={styles.paymentAmountBox}>
+                      <p>Admission Fee: Rs.{invoiceData.admissionFee} /=</p>
+                      <p>Monthly Fee: Rs.{invoiceData.newStudentMonthlyFee} /=</p>
+                      <h3 style={styles.totalAmount}>Total Amount: Rs.{invoiceData.paymentAmount} /=</h3>
+                    </div>
+                  </>
+                ) : (
+                  <h3>Amount: Rs.{invoiceData.paymentAmount} /=</h3>
+                )}
+                <p>{invoiceData.district}</p>
                                 </div>
 
                                 {/* New Separated Payment Amount Box */}
@@ -1143,7 +1224,76 @@ const styles = {
         marginTop: '5px',
         paddingTop: '5px',
         borderTop: '1px solid #ddd',
-    }
+    },
+    subjectPickerContainer: {
+        position: 'relative',
+        width: '100%',
+      },
+      subjectPickerTrigger: {
+        padding: '8px 12px',
+        border: '1px solid #D1D5DB',
+        borderRadius: '6px',
+        backgroundColor: 'white',
+        cursor: 'pointer',
+        fontSize: '16px',
+        width: 'calc(100% - 24px)',
+      },
+      subjectPickerDropdown: {
+        position: 'absolute',
+        top: '100%',
+        left: 0,
+        right: 0,
+        backgroundColor: 'white',
+        border: '1px solid #D1D5DB',
+        borderRadius: '6px',
+        marginTop: '4px',
+        maxHeight: '200px',
+        overflowY: 'auto',
+        zIndex: 1000,
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+      },
+      subjectGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(1, 1fr)',
+        gap: '8px',
+        padding: '10px',
+      },
+      subjectOption: {
+        padding: '8px',
+        border: '1px solid #E5E7EB',
+        borderRadius: '4px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s',
+        '&:hover': {
+          backgroundColor: '#F3F4F6',
+        },
+      },
+      selectedSubject: {
+        backgroundColor: '#4C1D95',
+        color: 'white',
+      },
+      selectedSubjectsContainer: {
+        marginTop: '8px',
+      },
+      selectedSubjects: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: '8px',
+      },
+      selectedSubjectTag: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '4px 8px',
+        backgroundColor: '#4C1D95',
+        color: 'white',
+        borderRadius: '4px',
+        fontSize: '14px',
+      },
+    
   };
 
 
