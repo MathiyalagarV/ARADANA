@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Logo from '../imgs/logo.jpeg';
+import Logo from '../imgs/img1.jpeg';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
@@ -118,7 +118,7 @@ const styles = {
         fontWeight: 'bold',
         textAlign: 'center',
         marginBottom: '24px',
-        color: '#4C1D95',
+        color: '#174f5f',
         '@media (max-width: 768px)': {
             fontSize: '20px',
             marginBottom: '16px',
@@ -169,7 +169,7 @@ const styles = {
     loginButton: {
         width: '98%',
         padding: '12px',
-        backgroundColor: '#4C1D95',
+        backgroundColor: '#174f5f',
         color: 'white',
         border: 'none',
         borderRadius: '6px',
