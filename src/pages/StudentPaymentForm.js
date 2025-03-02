@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import Logo from '../imgs/logo.jpeg';
+import Logo from '../imgs/img1.jpeg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt, faCheck, faTimes, faImage } from '@fortawesome/free-solid-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -245,7 +245,7 @@ const StudentPaymentSystem = () => {
 
             const element = invoiceRef.current;
             const canvas = await html2canvas(element, {
-                scale: 3,
+                scale: 4,
                 backgroundColor: '#fff',
             });
 
@@ -285,8 +285,8 @@ const StudentPaymentSystem = () => {
                             style={styles.logo}
                         />
                         <div style={styles.titleContainer}>
-                            <h1 style={styles.schoolTitle}>ARADENA</h1>
-                            <h2 style={styles.schoolhSubtitle}>SCHOOL of Music</h2>
+                            <h1 style={styles.schoolTitle}>ARADANA</h1>
+                            <h2 style={styles.schoolhSubtitle}>Music Academy</h2>
                         </div>
                     </div>
                     <div
@@ -591,8 +591,8 @@ const StudentPaymentSystem = () => {
                                 <div className="logo-section" style={styles.logoSection}>
                                     <img src={Logo} alt="Logo" className="logo" style={styles.logo} />
                                     <div style={styles.titleContainer}>
-                                        <h1 style={styles.schoolTitle}>ARADENA</h1>
-                                        <h2 style={styles.schoolSubtitle}>SCHOOL of Music</h2>
+                                        <h1 style={styles.schoolTitle}>ARADANA</h1>
+                                        <h2 style={styles.schoolSubtitle}>Music Academy</h2>
                                     </div>
                                 </div>
                             </div>
@@ -676,7 +676,7 @@ const styles = {
         justifyContent: 'space-between', // Space out items
         padding: '0 24px', // Consistent padding
         boxSizing: 'border-box', // Include padding in width/height
-        background: 'linear-gradient(135deg,rgb(238, 236, 240) 0%,rgb(224, 219, 226) 50%,rgb(202, 170, 216) 100%)',
+        background: 'linear-gradient(135deg,rgb(238, 236, 240) 0%,rgb(224, 219, 226) 50%,rgb(174, 182, 174) 100%)',
     },
     headerWave: {
         position: 'absolute',
@@ -704,11 +704,11 @@ const styles = {
         marginBottom: '18px',
         fontWeight: '700',
         fontSize: '12px',
-        background: 'linear-gradient(135deg, rgb(94, 19, 126) 0%, rgb(48, 20, 61) 50%, rgb(95, 6, 133) 100%)',
+        background: 'linear-gradient(135deg, rgb(233, 229, 236) 0%, rgb(241, 241, 241) 50%, rgb(165, 192, 173) 100%)',
         padding: '16px',
-        borderRadius: '8px 8px 0 0', // Rounded corners only on top
+        borderRadius: '10px 10px 0 0', // Rounded corners only on top
         color: 'white',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+        boxShadow: '0 2px 4px rgba(40, 71, 57, 0.2)',
         '@media (max-width: 768px)': {
             flexDirection: 'column',
             alignItems: 'flex-start',
@@ -727,8 +727,8 @@ const styles = {
     },
 
     logo: {
-        height: '55px',
-        width: '55px',
+        height: '50px',
+        width: '50px',
         objectFit: 'contain',
         filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.3))',
         '@media (max-width: 768px)': {
@@ -749,7 +749,7 @@ const styles = {
     schoolTitle: {
         fontSize: '28px',
         fontWeight: '900',
-        color: '#783199',
+        color: '#174f5f',
         margin: 0,
         letterSpacing: '2px',
         textTransform: 'uppercase',
@@ -762,7 +762,7 @@ const styles = {
 
     schoolSubtitle: {
         fontSize: '10px',
-        color: 'white',
+        color: '#f9a205',
         margin: 0,
         fontWeight: '600',
         letterSpacing: '1px',
@@ -778,7 +778,7 @@ const styles = {
 
      schoolhSubtitle: {
         fontSize: '10px',
-        color: '#1F2937',
+        color: '#f9a205',
         margin: 0,
         fontWeight: '600',
         letterSpacing: '1px',
@@ -815,7 +815,7 @@ const styles = {
     receiptLabel: {
         fontSize: '18px',
         fontWeight: 'bold',
-        color: '#4C1D95',
+        color: '#174f5f',
         '@media (max-width: 768px)': {
             fontSize: '16px',
         },
@@ -908,7 +908,7 @@ const styles = {
     yearDisplay: {
         fontSize: '16px',
         fontWeight: 'bold',
-        color: '#4C1D95',
+        color: '#174f5f',
     },
     monthGrid: {
         display: 'grid',
@@ -917,7 +917,7 @@ const styles = {
         padding: '10px',
     },
     selectedMonth: {
-        backgroundColor: '#4C1D95',
+        backgroundColor: '#174f5f',
         color: 'white',
     },
     monthOption: {
@@ -934,14 +934,14 @@ const styles = {
         },
     },
     checkIcon: {
-        color: '#4C1D95',
+        color: '#174f5f',
     },
     selectedMonthTag: {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '8px',
         padding: '4px 8px',
-        backgroundColor: '#4C1D95',
+        backgroundColor: '#174f5f',
         color: 'white',
         borderRadius: '4px',
         fontSize: '14px',
@@ -1043,7 +1043,7 @@ const styles = {
     },
     submitButton: {
         padding: '12px 24px',
-        backgroundColor: '#4C1D95',
+        backgroundColor: '#174f5f',
         color: 'white',
         border: 'none',
         borderRadius: '6px',
@@ -1188,7 +1188,7 @@ const styles = {
     thankYouMessage: {
         textAlign: 'center',
         marginTop: '20px',
-        color: '#460c5f',
+        color: '#174f5f',
         fontSize: '16px',
         marginBottom: '-3%',
      
@@ -1272,7 +1272,7 @@ const styles = {
         },
       },
       selectedSubject: {
-        backgroundColor: '#4C1D95',
+        backgroundColor: '#174f5f',
         color: 'white',
       },
       selectedSubjectsContainer: {
@@ -1288,7 +1288,7 @@ const styles = {
         alignItems: 'center',
         gap: '8px',
         padding: '4px 8px',
-        backgroundColor: '#4C1D95',
+        backgroundColor: '#174f5f',
         color: 'white',
         borderRadius: '4px',
         fontSize: '14px',
